@@ -1,9 +1,10 @@
 use std::env;
 
 mod day1;
+mod day2;
 
 fn main() {
-    let entry_points = [day1::main];
+    let entry_points = [day1::main, day2::main];
 
     let args: Vec<String> = env::args().collect();
     let mut index = entry_points.len() - 1;
