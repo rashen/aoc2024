@@ -7,7 +7,7 @@ pub fn main() {
     let input = input.lines().collect::<Vec<_>>().join("");
 
     println!("Part 1: {}", part1(&input, rows, cols));
-    // println!("Part 2: {}", part2(&input));
+    println!("Part 2: {}", part2(&input, rows, cols));
 }
 
 fn pos_to_idx(pos: IVec2, rows: usize, cols: usize) -> Option<usize> {
@@ -137,8 +137,50 @@ fn part1(input: &str, rows: usize, cols: usize) -> i32 {
     acc
 }
 
-fn part2(input: &str) -> i32 {
-    unimplemented!()
+fn find_cross(input: &str, idx: usize, rows: usize, cols: usize) -> bool {
+    let Some(pos) = idx_to_pos(idx, rows, cols) else {
+        return false;
+    };
+
+    let Some(upper_left) = get_char(pos + IVec2::new(-1, -1), rows, cols, input) else {
+        return false;
+    };
+    let Some(upper_right) = get_char(pos + IVec2::new(1, -1), rows, cols, input) else {
+        return false;
+    };
+    let Some(lower_right) = get_char(pos + IVec2::new(1, 1), rows, cols, input) else {
+        return false;
+    };
+    let Some(lower_left) = get_char(pos + IVec2::new(-1, 1), rows, cols, input) else {
+        return false;
+    };
+
+    let mut acc = 0;
+    if (upper_left == 'S' && lower_right == 'M') || (upper_left == 'M' && lower_right == 'S') {
+        acc += 1;
+    }
+    if (upper_right == 'S' && lower_left == 'M') || (upper_right == 'M' && lower_left == 'S') {
+        acc += 1;
+    }
+    return acc == 2;
+}
+
+fn get_char(pos: IVec2, rows: usize, cols: usize, input: &str) -> Option<char> {
+    if let Some(lower_left) = pos_to_idx(pos, rows, cols) {
+        return input.chars().nth(lower_left);
+    }
+    None
+}
+
+fn part2(input: &str, rows: usize, cols: usize) -> i32 {
+    input.chars().enumerate().fold(0, |acc, (idx, c)| {
+        if c == 'A' {
+            if find_cross(input, idx, rows, cols) {
+                return acc + 1;
+            }
+        }
+        acc
+    })
 }
 
 #[cfg(test)]
@@ -163,5 +205,10 @@ mod tests {
     #[test]
     fn test_part1() {
         assert_eq!(part1(INPUT, 10, 10), 18);
+    }
+
+    #[test]
+    fn test_part2() {
+        assert_eq!(part2(INPUT, 10, 10), 9);
     }
 }

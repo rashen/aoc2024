@@ -37,8 +37,4 @@ mod tests {
 }
 EOL
 
-if [[ -f .session ]]; then
-    SESSION=$(<.session)
-    mkdir -p input
-    curl https://adventofcode.com/2024/day/${NEW_DAY}/input -q --compressed -H "Cookie: session=$SESSION" >input/day${NEW_DAY}.txt
-fi
+fetch_input.sh ${NEW_DAY}
