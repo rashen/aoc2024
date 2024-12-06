@@ -37,4 +37,4 @@ mod tests {
 }
 EOL
 
-fetch_input.sh ${NEW_DAY}
+./fetch_input.sh ${NEW_DAY}
