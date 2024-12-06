@@ -1,11 +1,11 @@
 use glam::IVec2;
 use itertools::Itertools;
-use rayon::prelude::*;
 
 pub fn main() {
     let input = std::fs::read_to_string("input/day6.txt").expect("No input");
-    println!("Part 1: {}", part1(&input));
-    println!("Part 2: {}", part2(&input));
+    let (count, visited) = part1(&input);
+    println!("Part 1: {count}",);
+    println!("Part 2: {}", part2(&input, &visited));
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -109,45 +109,52 @@ fn step(world: &mut World) -> Action {
     Action::Step
 }
 
-fn part1(input: &str) -> i32 {
+fn part1(input: &str) -> (i32, Vec<Visited>) {
     let mut world = parse_world(input);
     while step(&mut world) != Action::Done {}
-    world.visited.into_iter().map(|v| v.tile).unique().count() as i32
+    let count = world.visited.iter().map(|v| v.tile).unique().count() as i32;
+    (count, world.visited)
 }
 
-fn part2(input: &str) -> i32 {
-    let mut used_world = parse_world(input);
-    let world = used_world.clone();
-    while step(&mut used_world) != Action::Done {}
-
-    let acc: i32 = used_world.visited[1..]
-        .par_iter()
-        .fold(
-            || 0_i32,
-            |acc, v| {
-                let mut world = world.clone();
-
-                let obstacle = v.tile;
-                world.obstacles.push(obstacle);
-
-                loop {
-                    match step(&mut world) {
-                        Action::Done => return acc,
-                        Action::Step => {
-                            let len = world.visited.len();
-                            if world.visited[0..len - 1].contains(&Visited {
-                                tile: world.guard_pos,
-                                dir: world.guard_facing,
-                            }) {
-                                return acc + 1;
-                            }
-                        }
-                        Action::Turn => {}
-                    }
+fn loop_check(mut world: World) -> bool {
+    loop {
+        match step(&mut world) {
+            Action::Step => {
+                // Check if we have traversed this tile before
+                let len = world.visited.len();
+                if world.visited[0..len - 1].contains(&Visited {
+                    tile: world.guard_pos,
+                    dir: world.guard_facing,
+                }) {
+                    return true;
                 }
-            },
-        )
-        .sum();
+            }
+            Action::Done => {
+                break;
+            }
+            _ => {}
+        }
+    }
+    false
+}
+
+fn part2(input: &str, visited: &[Visited]) -> i32 {
+    let world = parse_world(input);
+
+    let visited = visited
+        .iter()
+        .map(|v| v.tile)
+        .unique()
+        .collect::<Vec<IVec2>>();
+    let mut acc = 0;
+
+    for tile in visited[1..].iter() {
+        let mut world = world.clone();
+        world.obstacles.push(*tile);
+        if loop_check(world) {
+            acc += 1;
+        }
+    }
 
     acc
 }
@@ -197,7 +204,8 @@ mod tests {
 
     #[test]
     fn test_part1() {
-        assert_eq!(part1(INPUT), 41);
+        let (count, _) = part1(INPUT);
+        assert_eq!(count, 41);
     }
 
     #[test]
@@ -207,12 +215,14 @@ mod tests {
 .......#.#........
 ....#....^#.......
 .........#........";
-        assert_eq!(part1(input), 8);
+        let (count, _) = part1(input);
+        assert_eq!(count, 8);
     }
 
     #[test]
     fn test_part2() {
-        assert_eq!(part2(INPUT), 6);
+        let (_, visited) = part1(INPUT);
+        assert_eq!(part2(INPUT, &visited), 6);
     }
 
     #[test]
@@ -221,7 +231,8 @@ mod tests {
 #..#
 ....
 ..^.";
-        assert_eq!(part2(input), 0);
+        let (_, visited) = part1(INPUT);
+        assert_eq!(part2(input, &visited), 0);
     }
 
     const INPUT: &str = "....#.....
