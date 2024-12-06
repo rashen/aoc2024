@@ -6,4 +6,5 @@ edition = "2021"
 [dependencies]
 glam = "0.29.2"
 itertools = "0.13.0"
+rayon = "1.10.0"
 regex = "1.11.1"
