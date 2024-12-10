@@ -1,6 +1,7 @@
 use std::env;
 
 mod day1;
+mod day10;
 mod day2;
 mod day3;
 mod day4;
@@ -19,6 +20,7 @@ fn main() {
         day6::main,
         day7::main,
         day8::main,
+        day10::main,
     ];
 
     let args: Vec<String> = env::args().collect();
