@@ -1,7 +1,6 @@
 use std::env;
 
 mod day1;
-mod day10;
 mod day2;
 mod day3;
 mod day4;
@@ -9,6 +8,8 @@ mod day5;
 mod day6;
 mod day7;
 mod day8;
+mod day10;
+mod day11;
 
 fn main() {
     let entry_points = [
@@ -21,6 +22,7 @@ fn main() {
         day7::main,
         day8::main,
         day10::main,
+        day11::main,
     ];
 
     let args: Vec<String> = env::args().collect();
