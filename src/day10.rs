@@ -4,7 +4,7 @@ use itertools::Itertools;
 pub fn main() {
     let input = std::fs::read_to_string("input/day10.txt").expect("No input");
     println!("Part 1: {}", part1(&input));
-    // println!("Part 2: {}", part2(&input));
+    println!("Part 2: {}", part2(&input));
 }
 
 fn pos_to_idx(pos: IVec2, rows: usize, cols: usize) -> Option<usize> {
@@ -37,20 +37,18 @@ fn get_rows_cols(input: &str) -> (usize, usize) {
     (rows, cols)
 }
 
-fn find_paths(
+fn find_path_endpoints(
     height: i32,
-    score: i32,
     idx: usize,
     rows: usize,
     cols: usize,
-    input: &str,
+    trail_map: &str,
 ) -> Vec<IVec2> {
     let next_height = height + 1;
     let Some(pos) = idx_to_pos(idx, rows, cols) else {
         return vec![];
     };
-    if input.chars().nth(idx) == Some('9') {
-        // println!("Found 9 at {pos}");
+    if trail_map.chars().nth(idx) == Some('9') {
         return vec![pos];
     }
     let neighbors = [IVec2::X, IVec2::Y, IVec2::NEG_X, IVec2::NEG_Y];
@@ -58,9 +56,14 @@ fn find_paths(
     let mut output = Vec::new();
     for n in neighbors.iter().map(|p| p + pos) {
         if let Some(i) = pos_to_idx(n, rows, cols) {
-            if input.chars().nth(i).and_then(|c| c.to_digit(10)) == Some(next_height as u32) {
-                // println!("Traversing to {pos}");
-                output.append(&mut find_paths(next_height, score, i, rows, cols, input));
+            if trail_map.chars().nth(i).and_then(|c| c.to_digit(10)) == Some(next_height as u32) {
+                output.append(&mut find_path_endpoints(
+                    next_height,
+                    i,
+                    rows,
+                    cols,
+                    trail_map,
+                ));
             }
         }
     }
@@ -74,8 +77,7 @@ fn part1(input: &str) -> i32 {
     let mut acc = 0;
     for (i, c) in input.chars().enumerate() {
         if c == '0' {
-            let mut path = find_paths(0, 0, i, rows, cols, &input);
-            // println!("Found path {path:?}");
+            let path = find_path_endpoints(0, i, rows, cols, &input);
             acc += path.iter().unique().count() as i32;
         }
     }
@@ -83,8 +85,39 @@ fn part1(input: &str) -> i32 {
     acc
 }
 
+fn find_paths(height: i32, idx: usize, rows: usize, cols: usize, trail_map: &str) -> i32 {
+    let next_height = height + 1;
+    let Some(pos) = idx_to_pos(idx, rows, cols) else {
+        return 0;
+    };
+    if trail_map.chars().nth(idx) == Some('9') {
+        return 1;
+    }
+    let neighbors = [IVec2::X, IVec2::Y, IVec2::NEG_X, IVec2::NEG_Y];
+
+    let mut acc = 0;
+    for n in neighbors.iter().map(|p| p + pos) {
+        if let Some(i) = pos_to_idx(n, rows, cols) {
+            if trail_map.chars().nth(i).and_then(|c| c.to_digit(10)) == Some(next_height as u32) {
+                acc += find_paths(next_height, i, rows, cols, trail_map);
+            }
+        }
+    }
+    acc
+}
+
 fn part2(input: &str) -> i32 {
-    todo!()
+    let (rows, cols) = get_rows_cols(input);
+    let input = input.lines().collect::<String>();
+
+    let mut acc = 0;
+    for (i, c) in input.chars().enumerate() {
+        if c == '0' {
+            acc += find_paths(0, i, rows, cols, &input);
+        }
+    }
+
+    acc
 }
 
 #[cfg(test)]
@@ -128,6 +161,22 @@ mod tests {
 32019012
 01329801
 10456732"
+            )
+        );
+    }
+
+    #[test]
+    fn test_part2() {
+        assert_eq!(
+            3,
+            part2(
+                ".....0.
+..4321.
+..5..2.
+..6543.
+..7..4.
+..8765.
+..9...."
             )
         );
     }
