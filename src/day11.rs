@@ -1,7 +1,5 @@
 use std::collections::BTreeMap;
 
-use itertools::Itertools;
-
 pub fn main() {
     let input = std::fs::read_to_string("input/day11.txt").expect("No input");
     println!("Part 1: {}", part1(&input));
