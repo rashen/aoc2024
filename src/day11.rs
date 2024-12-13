@@ -93,6 +93,7 @@ fn part2(input: &str) -> i64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use itertools::Itertools;
 
     fn print_stones(stones: Stones) -> String {
         stones
