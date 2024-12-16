@@ -3,8 +3,12 @@
 if [[ $# -gt 0 ]]; then
     NEW_DAY=$1
 else
-    LAST_DAY="$(ls src | grep day | cut -c 4 | sort | tail -1)"
+    LAST_DAY=$(find src -maxdepth 1 -type f -name "day*.rs" |
+        sed -n 's/.*day\([0-9]\+\)\.rs$/\1/p' |
+        sort -n |
+        tail -n 1)
     NEW_DAY=$(($LAST_DAY + 1))
+    echo $NEW_DAY
 fi
 
 FILE="src/day${NEW_DAY}.rs"
