@@ -8,25 +8,25 @@ pub fn main() {
 
 #[derive(Debug, Clone)]
 struct Program {
-    a: i32,
-    b: i32,
-    c: i32,
+    a: i64,
+    b: i64,
+    c: i64,
     iptr: usize,
-    ins: Vec<i32>,
+    ins: Vec<i64>,
 }
 impl Program {
     pub fn from_str(input: &str) -> Option<Self> {
         let mut l = input.lines();
-        let a = l.next()?.split_once(": ")?.1.parse::<i32>().ok()?;
-        let b = l.next()?.split_once(": ")?.1.parse::<i32>().ok()?;
-        let c = l.next()?.split_once(": ")?.1.parse::<i32>().ok()?;
+        let a = l.next()?.split_once(": ")?.1.parse::<i64>().ok()?;
+        let b = l.next()?.split_once(": ")?.1.parse::<i64>().ok()?;
+        let c = l.next()?.split_once(": ")?.1.parse::<i64>().ok()?;
         l.next();
         let ins = l
             .next()?
             .split_once(": ")?
             .1
             .split(',')
-            .filter_map(|s| s.parse::<i32>().ok())
+            .filter_map(|s| s.parse::<i64>().ok())
             .collect();
         Some(Program {
             a,
@@ -36,7 +36,7 @@ impl Program {
             ins,
         })
     }
-    pub fn new(a: i32, b: i32, c: i32, ins: Vec<i32>) -> Self {
+    pub fn new(a: i64, b: i64, c: i64, ins: Vec<i64>) -> Self {
         Self {
             a,
             b,
@@ -47,11 +47,11 @@ impl Program {
     }
 }
 
-fn literal_operand(p: &Program) -> i32 {
-    p.ins[p.iptr + 1] as i32
+fn literal_operand(p: &Program) -> i64 {
+    p.ins[p.iptr + 1]
 }
-fn combo_operand(p: &Program) -> i32 {
-    let val = p.ins[p.iptr + 1] as i32;
+fn combo_operand(p: &Program) -> i64 {
+    let val = p.ins[p.iptr + 1];
     match val {
         0..=3 => val,
         4 => p.a,
@@ -70,14 +70,14 @@ fn part1(input: &str) -> String {
         .collect()
 }
 
-fn eval(p: &mut Program) -> Vec<i32> {
+fn eval(p: &mut Program) -> Vec<i64> {
     let mut out = Vec::new();
     while p.iptr < p.ins.len() {
         let opcode = p.ins[p.iptr];
         match opcode {
             0 => {
                 // adv
-                p.a = p.a / 2_i32.pow(combo_operand(&p) as u32);
+                p.a = p.a / 2_i64.pow(combo_operand(&p) as u32);
             }
             1 => {
                 // bxl
@@ -101,15 +101,15 @@ fn eval(p: &mut Program) -> Vec<i32> {
             5 => {
                 // out
                 let res = combo_operand(&p).rem_euclid(8);
-                out.push(res)
+                out.push(res);
             }
             6 => {
                 // bdv
-                p.b = p.a / 2_i32.pow(combo_operand(&p) as u32);
+                p.b = p.a / 2_i64.pow(combo_operand(&p) as u32);
             }
             7 => {
                 // cdv
-                p.c = p.a / 2_i32.pow(combo_operand(&p) as u32);
+                p.c = p.a / 2_i64.pow(combo_operand(&p) as u32);
             }
             _ => panic!("invalid opcode"),
         };
@@ -119,18 +119,47 @@ fn eval(p: &mut Program) -> Vec<i32> {
     out
 }
 
-fn part2(input: &str) -> i32 {
+fn octal_to_decimal(v: &[i64]) -> i64 {
+    let mut octal: i64 = v
+        .iter()
+        .enumerate()
+        .map(|(i, n)| n * 10_i64.pow(i as u32))
+        .sum();
+    let mut decimal = 0;
+    let mut base = 1;
+
+    while octal > 0 {
+        decimal += (octal % 10) * base;
+        octal /= 10;
+        base *= 8;
+    }
+
+    decimal
+}
+
+fn part2(input: &str) -> i64 {
     let p = Program::from_str(input).unwrap();
 
-    for i in 0.. {
-        let mut p = p.clone();
-        p.a = i;
-        let out = eval(&mut p);
-        if out == p.ins {
-            return i;
+    let mut reg_a = Vec::new();
+
+    for i in 0..p.ins.len() {
+        for a in 0..8 {
+            let mut p = p.clone();
+            let mut test_a = reg_a.clone();
+            test_a.push(a);
+            test_a.reverse();
+            p.a = octal_to_decimal(&test_a);
+            let out = eval(&mut p);
+
+            if out == p.ins[p.ins.len() - 1 - i..] {
+                reg_a.push(a);
+                break;
+            }
         }
     }
-    unreachable!()
+
+    reg_a.reverse();
+    octal_to_decimal(&reg_a)
 }
 
 #[cfg(test)]
@@ -195,14 +224,11 @@ Program: 0,1,5,4,3,0";
         assert_eq!(part1(INPUT), "4,6,3,5,6,3,5,2,1,0");
     }
 
-    const INPUT2: &str = "Register A: 2024
-Register B: 0
-Register C: 0
-
-Program: 0,3,5,4,3,0";
-
     #[test]
-    fn test_part2() {
-        assert_eq!(part2(INPUT2), 117440);
+    fn test_octal_to_decimal() {
+        assert_eq!(octal_to_decimal(&[7]), 7);
+        assert_eq!(octal_to_decimal(&[5, 4]), 44);
+        assert_eq!(octal_to_decimal(&[3, 4, 5, 3, 0, 0]), 117440);
+        assert_eq!(octal_to_decimal(&[0, 0]), 0);
     }
 }

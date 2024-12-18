@@ -8,7 +8,6 @@ else
         sort -n |
         tail -n 1)
     NEW_DAY=$(($LAST_DAY + 1))
-    echo $NEW_DAY
 fi
 
 FILE="src/day${NEW_DAY}.rs"
