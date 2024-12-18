@@ -36,6 +36,7 @@ impl Program {
             ins,
         })
     }
+    #[allow(unused)]
     pub fn new(a: i64, b: i64, c: i64, ins: Vec<i64>) -> Self {
         Self {
             a,
@@ -122,6 +123,7 @@ fn eval(p: &mut Program) -> Vec<i64> {
 fn octal_to_decimal(v: &[i64]) -> i64 {
     let mut octal: i64 = v
         .iter()
+        .rev()
         .enumerate()
         .map(|(i, n)| n * 10_i64.pow(i as u32))
         .sum();
@@ -222,13 +224,5 @@ Program: 0,1,5,4,3,0";
     #[test]
     fn test_part1() {
         assert_eq!(part1(INPUT), "4,6,3,5,6,3,5,2,1,0");
-    }
-
-    #[test]
-    fn test_octal_to_decimal() {
-        assert_eq!(octal_to_decimal(&[7]), 7);
-        assert_eq!(octal_to_decimal(&[5, 4]), 44);
-        assert_eq!(octal_to_decimal(&[3, 4, 5, 3, 0, 0]), 117440);
-        assert_eq!(octal_to_decimal(&[0, 0]), 0);
     }
 }

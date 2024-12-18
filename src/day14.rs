@@ -1,12 +1,10 @@
 use glam::IVec2;
-use itertools::Itertools;
 use std::io;
 
 use ratatui::{
     crossterm::event::{self, KeyCode, KeyEventKind},
     style::Stylize,
     widgets::Paragraph,
-    DefaultTerminal, TerminalOptions,
 };
 
 pub fn main() {

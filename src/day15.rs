@@ -146,6 +146,7 @@ fn part1(input: &str) -> i32 {
     acc
 }
 
+#[allow(unused)]
 fn part2(input: &str) -> i32 {
     todo!()
 }
