@@ -16,6 +16,7 @@ mod day13;
 mod day14;
 mod day15;
 mod day17;
+mod day19;
 
 fn main() {
     let entry_points = [
@@ -35,6 +36,7 @@ fn main() {
         day14::main,
         day15::main,
         day17::main,
+        day19::main,
     ];
 
     let args: Vec<String> = env::args().collect();
